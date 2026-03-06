@@ -5,10 +5,28 @@ import { requireUser } from '@/lib/auth';
 import { badRequest, json } from '@/lib/http';
 import { prisma } from '@/lib/prisma';
 import { createBatchSchema } from '@/lib/validators';
+import { CACHE_TTL_MS, clearRuntimeCaches, getBatchesCache, getCache, setCache } from '@/lib/runtime-cache';
+
+const batchesCache = getBatchesCache();
+
+function buildBatchesCacheKey(userId: string, req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  return `batches:${userId}:${searchParams.toString()}`;
+}
+
+function clearBatchesCache() {
+  batchesCache.clear();
+}
 
 export async function GET(req: NextRequest) {
   const auth = await requireUser(req);
   if ('error' in auth) return auth.error;
+
+  const cacheKey = buildBatchesCacheKey(auth.user.id, req);
+  const cached = getCache(batchesCache, cacheKey);
+  if (cached) {
+    return json(cached);
+  }
 
   const { searchParams } = new URL(req.url);
   const category = searchParams.get('category');
@@ -32,7 +50,10 @@ export async function GET(req: NextRequest) {
     status: statusFromDlc(batch.dlcDate, settings?.alertDaysBefore ?? 2)
   }));
 
-  return json({ batches: data });
+  const payload = { batches: data };
+  setCache(batchesCache, cacheKey, payload, CACHE_TTL_MS);
+
+  return json(payload);
 }
 
 export async function POST(req: NextRequest) {
@@ -73,6 +94,9 @@ export async function POST(req: NextRequest) {
     },
     include: { product: true }
   });
+
+  clearBatchesCache();
+  clearRuntimeCaches();
 
   return json({ batch }, { status: 201 });
 }

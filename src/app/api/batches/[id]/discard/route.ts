@@ -3,6 +3,7 @@ import { BatchState } from '@prisma/client';
 import { requireUser } from '@/lib/auth';
 import { json } from '@/lib/http';
 import { prisma } from '@/lib/prisma';
+import { clearRuntimeCaches } from '@/lib/runtime-cache';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireUser(req);
@@ -18,6 +19,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       quantityRemaining: 0
     }
   });
+
+  clearRuntimeCaches();
 
   return json({ batch: updated });
 }

@@ -5,10 +5,29 @@ import { BatchState } from '@prisma/client';
 import { requireUser } from '@/lib/auth';
 import { json } from '@/lib/http';
 import { prisma } from '@/lib/prisma';
+import { CACHE_TTL_MS, getCache, getDashboardCache, setCache } from '@/lib/runtime-cache';
+
+type DashboardPayload = {
+  counters: {
+    toProcessToday: number;
+    toProcess48h: number;
+    expired: number;
+  };
+  totalActive: number;
+  alertDaysBefore: number;
+};
+
+const dashboardCache = getDashboardCache();
 
 export async function GET(req: NextRequest) {
   const auth = await requireUser(req);
   if ('error' in auth) return auth.error;
+
+  const cacheKey = `dashboard:${auth.user.id}`;
+  const cached = getCache(dashboardCache, cacheKey);
+  if (cached) {
+    return json(cached as DashboardPayload);
+  }
 
   const settings = await prisma.setting.findUnique({ where: { id: 'singleton' } });
   const alertDaysBefore = settings?.alertDaysBefore ?? 2;
@@ -17,7 +36,7 @@ export async function GET(req: NextRequest) {
 
   const batches = await prisma.batch.findMany({
     where: { state: BatchState.ACTIVE, quantityRemaining: { gt: 0 } },
-    include: { product: true }
+    select: { dlcDate: true }
   });
 
   let expired = 0;
@@ -43,7 +62,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return json({
+  const payload: DashboardPayload = {
     counters: {
       toProcessToday: todayCount,
       toProcess48h: soon,
@@ -51,5 +70,9 @@ export async function GET(req: NextRequest) {
     },
     totalActive: batches.length,
     alertDaysBefore
-  });
+  };
+
+  setCache(dashboardCache, cacheKey, payload, CACHE_TTL_MS);
+
+  return json(payload);
 }

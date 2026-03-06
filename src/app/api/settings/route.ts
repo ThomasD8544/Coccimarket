@@ -3,6 +3,7 @@ import { requireAdmin, requireUser } from '@/lib/auth';
 import { badRequest, json } from '@/lib/http';
 import { prisma } from '@/lib/prisma';
 import { updateSettingsSchema } from '@/lib/validators';
+import { clearRuntimeCaches } from '@/lib/runtime-cache';
 
 export async function GET(req: NextRequest) {
   const auth = await requireUser(req);
@@ -28,6 +29,8 @@ export async function PATCH(req: NextRequest) {
     create: { id: 'singleton', ...parsed.data },
     update: parsed.data
   });
+
+  clearRuntimeCaches();
 
   return json({ settings });
 }
