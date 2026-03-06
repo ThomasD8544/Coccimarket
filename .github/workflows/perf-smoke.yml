@@ -1,0 +1,27 @@
+name: Perf Smoke (staging)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * *'
+
+jobs:
+  perf-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run smoke load test on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            set -e
+            cd /home/ubuntu/.openclaw/workspace/Coccimarket
+            export LOADTEST_EMAIL='${{ secrets.LOADTEST_EMAIL }}'
+            export LOADTEST_PASSWORD='${{ secrets.LOADTEST_PASSWORD }}'
+            export TARGET_HOST='https://staging.coccimarket-dlc.duckdns.org'
+            export USERS='25'
+            export SPAWN='5'
+            export DURATION='3m'
+            ./scripts/run-perf-smoke.sh

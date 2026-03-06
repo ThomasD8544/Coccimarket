@@ -1,0 +1,25 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy on EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            set -e
+            cd /home/ubuntu/.openclaw/workspace/Coccimarket
+            if [ ! -f .env.staging ]; then
+              echo ".env.staging missing on server" >&2
+              exit 1
+            fi
+            ./scripts/deploy-staging.sh

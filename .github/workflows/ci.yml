@@ -2,12 +2,13 @@ name: CI
 
 on:
   push:
-    branches: ["main", "master"]
+    branches: [main, develop]
   pull_request:
 
 jobs:
   test-build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -15,20 +16,17 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
-      - name: Install dependencies
+      - name: Install
         run: npm ci
 
-      - name: Generate Prisma client
-        run: npm run prisma:generate
-
-      - name: Run tests
-        run: npm test
-
-      - name: Run lint
+      - name: Lint
         run: npm run lint
 
-      - name: Build app
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
         run: npm run build

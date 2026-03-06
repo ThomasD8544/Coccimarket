@@ -112,3 +112,60 @@ Couvre:
 ## Process réception
 
 Voir [docs/process-reception-livraison.md](docs/process-reception-livraison.md).
+
+## Environnements: prod + staging
+
+### Staging (étape 1)
+
+Fichiers ajoutés:
+
+- `docker-compose.staging.yml`
+- `.env.staging.example`
+- `scripts/deploy-staging.sh`
+
+Mise en place:
+
+```bash
+cp .env.staging.example .env.staging
+# compléter les secrets
+./scripts/deploy-staging.sh
+```
+
+Ports par défaut:
+
+- prod app: `3000`, prod db: `5432`
+- staging app: `3001`, staging db: `5433`
+
+## CI/CD staging (étape 2)
+
+Workflows GitHub Actions:
+
+- `.github/workflows/ci.yml`: lint + tests + build
+- `.github/workflows/deploy-staging.yml`: déploiement auto de `develop`
+
+Secrets GitHub requis:
+
+- `STAGING_HOST` (ex: `13.53.41.73`)
+- `STAGING_USER` (ex: `ubuntu`)
+- `STAGING_SSH_KEY` (clé privée)
+
+## Perf smoke test (étape 3)
+
+Fichiers:
+
+- `scripts/run-perf-smoke.sh`
+- `.github/workflows/perf-smoke.yml`
+
+Secrets GitHub supplémentaires:
+
+- `LOADTEST_EMAIL`
+- `LOADTEST_PASSWORD`
+
+Lancement manuel local:
+
+```bash
+LOADTEST_EMAIL='admin@coccimarket.local' \
+LOADTEST_PASSWORD='admin1234' \
+TARGET_HOST='https://staging.coccimarket-dlc.duckdns.org' \
+./scripts/run-perf-smoke.sh
+```
