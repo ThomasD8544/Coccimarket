@@ -1,5 +1,6 @@
 'use client';
 
+import { BellRing, CheckCircle2, Smartphone } from 'lucide-react';
 import { useState } from 'react';
 
 function urlBase64ToUint8Array(base64String: string) {
@@ -52,13 +53,48 @@ export function PushEnable() {
   }
 
   return (
-    <div className="card">
-      <h3 className="font-semibold">Notifications push (optionnel)</h3>
-      <p className="mb-2 text-sm text-stone-600">Activez les push pour recevoir les alertes DLC sur iPhone (PWA installée).</p>
-      <button className="btn-secondary" type="button" onClick={subscribe}>
-        Activer les push
-      </button>
-      {status && <p className="mt-2 text-sm">{status}</p>}
+    <div className="card soft-appear-delayed">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="section-kicker">Notifications</p>
+          <h3 className="mt-2 text-xl font-semibold text-stone-900">Recevoir les alertes DLC en temps réel</h3>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
+            Idéal pour les postes mobiles. Une fois la PWA installée sur iPhone, l’équipe reçoit les alertes urgentes sans ouvrir l’application.
+          </p>
+        </div>
+        <div className="hidden rounded-[20px] bg-[var(--brand-soft)] p-3 text-[var(--brand)] md:block">
+          <BellRing className="h-6 w-6" />
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-3 md:grid-cols-3">
+        <div className="card-muted">
+          <Smartphone className="h-5 w-5 text-slate-700" />
+          <p className="mt-3 text-sm font-semibold text-stone-900">Usage mobile</p>
+          <p className="mt-1 text-sm leading-6 text-slate-600">Pensé pour l’équipe en rayon et en réception.</p>
+        </div>
+        <div className="card-muted">
+          <BellRing className="h-5 w-5 text-slate-700" />
+          <p className="mt-3 text-sm font-semibold text-stone-900">Alerte immédiate</p>
+          <p className="mt-1 text-sm leading-6 text-slate-600">Lots sensibles signalés dès que l’action devient prioritaire.</p>
+        </div>
+        <div className="card-muted">
+          <CheckCircle2 className="h-5 w-5 text-slate-700" />
+          <p className="mt-3 text-sm font-semibold text-stone-900">Activation simple</p>
+          <p className="mt-1 text-sm leading-6 text-slate-600">Une seule autorisation suffit sur l’appareil concerné.</p>
+        </div>
+      </div>
+
+      <div className="mt-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <button className="btn-primary" type="button" onClick={subscribe}>
+          Activer les notifications push
+        </button>
+        {status && (
+          <p className={`rounded-2xl px-4 py-3 text-sm ${status === 'Push activé.' ? 'bg-emerald-50 text-emerald-700' : 'bg-stone-100 text-stone-700'}`}>
+            {status}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

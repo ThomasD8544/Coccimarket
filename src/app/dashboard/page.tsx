@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, ArrowRight, BellRing, Clock3, Package2, Sparkles, TimerReset } from 'lucide-react';
 import { AuthGuard } from '@/components/auth-guard';
 import { PushEnable } from '@/components/push-enable';
 
@@ -26,7 +27,7 @@ type Batch = {
 function formatParisDate(iso: string) {
   return new Intl.DateTimeFormat('fr-FR', {
     day: '2-digit',
-    month: '2-digit',
+    month: 'short',
     year: 'numeric',
     timeZone: 'Europe/Paris'
   }).format(new Date(iso));
@@ -36,7 +37,7 @@ function parisNowLabel() {
   return new Intl.DateTimeFormat('fr-FR', {
     weekday: 'long',
     day: '2-digit',
-    month: '2-digit',
+    month: 'long',
     timeZone: 'Europe/Paris'
   }).format(new Date());
 }
@@ -71,114 +72,205 @@ export default function DashboardPage() {
 
   const soon = active.filter((b) => b.status === 'SOON').length;
   const expired = active.filter((b) => b.status === 'EXPIRED').length;
+  const healthLabel = expired > 0 ? 'Intervention immédiate' : soon > 0 ? 'Surveillance renforcée' : 'Situation stable';
 
   return (
     <AuthGuard>
-      <div className="space-y-4">
-        <section className="card soft-appear">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="space-y-4 md:space-y-6">
+        <section className="card soft-appear overflow-hidden">
+          <div className="grid gap-5 lg:grid-cols-[1.3fr_0.9fr] lg:items-end">
             <div>
-              <h1 className="text-xl font-bold text-stone-800">Tableau de bord DLC</h1>
-              <p className="text-sm text-stone-600">{parisNowLabel()} • vue opérationnelle du banc traiteur</p>
+              <p className="section-kicker">Vue opérationnelle</p>
+              <h2 className="section-title mt-3 text-stone-900">Priorisez les lots qui demandent une action aujourd’hui.</h2>
+              <p className="section-subtitle mt-3 max-w-2xl">
+                {parisNowLabel()} : cette synthèse met en avant les urgences DLC, le volume actif et les catégories à surveiller pendant le service.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Link className="btn-primary" href="/reception">
+                  Ajouter une réception
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link className="btn-secondary" href="/lots?filter=48h">
+                  Voir les lots sensibles
+                </Link>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Link className="btn-secondary" href="/reception">
-                + Réception rapide
-              </Link>
-              <Link className="btn-primary" href="/lots">
-                Ouvrir les lots
-              </Link>
+
+            <div className="rounded-[28px] border border-[rgba(216,109,31,0.12)] bg-[linear-gradient(135deg,rgba(255,241,225,0.88)_0%,rgba(255,249,241,0.7)_100%)] p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-slate-600">État du parc aujourd’hui</p>
+                  <p className="mt-2 text-2xl font-semibold text-stone-900">{healthLabel}</p>
+                </div>
+                <span className={`badge ${expired > 0 ? 'badge-danger' : soon > 0 ? 'badge-warning' : 'badge-success'}`}>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {expired > 0 ? 'Alerte' : soon > 0 ? 'Attention' : 'Maîtrisé'}
+                </span>
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-[22px] bg-white/70 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Actifs</p>
+                  <p className="mt-2 text-3xl font-semibold text-stone-900">{active.length}</p>
+                </div>
+                <div className="rounded-[22px] bg-white/70 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Sous tension</p>
+                  <p className="mt-2 text-3xl font-semibold text-amber-700">{soon}</p>
+                </div>
+                <div className="rounded-[22px] bg-white/70 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Périmés</p>
+                  <p className="mt-2 text-3xl font-semibold text-red-700">{expired}</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-          <Link className="card block border-amber-300 soft-appear hover:shadow-md" href="/lots?filter=today">
-            <p className="text-xs uppercase tracking-wide text-stone-500">A traiter aujourd&apos;hui</p>
-            <p className="mt-2 text-4xl font-bold text-amber-700">{counters?.toProcessToday ?? '-'}</p>
-            <p className="mt-1 text-xs text-stone-500">Ouvrir la liste</p>
+        <section className="grid grid-cols-1 gap-3 xl:grid-cols-3">
+          <Link className="metric-card soft-appear block" href="/lots?filter=today">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">À traiter aujourd’hui</p>
+                <p className="mt-3 text-4xl font-semibold text-stone-900">{counters?.toProcessToday ?? '-'}</p>
+              </div>
+              <span className="rounded-2xl bg-[var(--warning-soft)] p-3 text-[var(--warning)]">
+                <Clock3 className="h-5 w-5" />
+              </span>
+            </div>
+            <p className="mt-4 text-sm text-slate-600">Lots dont la DLC tombe aujourd’hui. Priorité immédiate pour le service.</p>
+            {!counters && <p className="mt-2 text-xs text-slate-500">Chargement des indicateurs en cours…</p>}
           </Link>
-          <Link className="card block border-orange-300 soft-appear hover:shadow-md" href="/lots?filter=48h">
-            <p className="text-xs uppercase tracking-wide text-stone-500">Sous 48h</p>
-            <p className="mt-2 text-4xl font-bold text-orange-700">{counters?.toProcess48h ?? '-'}</p>
-            <p className="mt-1 text-xs text-stone-500">Ouvrir la liste</p>
+
+          <Link className="metric-card soft-appear block" href="/lots?filter=48h">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Sous 48 heures</p>
+                <p className="mt-3 text-4xl font-semibold text-stone-900">{counters?.toProcess48h ?? '-'}</p>
+              </div>
+              <span className="rounded-2xl bg-[#fff1e1] p-3 text-[var(--brand)]">
+                <TimerReset className="h-5 w-5" />
+              </span>
+            </div>
+            <p className="mt-4 text-sm text-slate-600">Vision anticipée des produits à écouler rapidement pour réduire la casse.</p>
+            {!counters && <p className="mt-2 text-xs text-slate-500">Chargement des indicateurs en cours…</p>}
           </Link>
-          <Link className="card block border-red-300 soft-appear hover:shadow-md" href="/lots?filter=expired">
-            <p className="text-xs uppercase tracking-wide text-stone-500">Périmés</p>
-            <p className="mt-2 text-4xl font-bold text-red-700">{counters?.expired ?? '-'}</p>
-            <p className="mt-1 text-xs text-stone-500">Ouvrir la liste</p>
+
+          <Link className="metric-card soft-appear block" href="/lots?filter=expired">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Déjà périmés</p>
+                <p className="mt-3 text-4xl font-semibold text-stone-900">{counters?.expired ?? '-'}</p>
+              </div>
+              <span className="rounded-2xl bg-[var(--danger-soft)] p-3 text-[var(--danger)]">
+                <AlertTriangle className="h-5 w-5" />
+              </span>
+            </div>
+            <p className="mt-4 text-sm text-slate-600">Lots qui demandent une décision immédiate pour sécuriser le stock.</p>
+            {!counters && <p className="mt-2 text-xs text-slate-500">Chargement des indicateurs en cours…</p>}
           </Link>
         </section>
 
-        <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1.3fr_1fr]">
+        <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1.3fr_0.9fr]">
           <article className="card soft-appear">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">A traiter maintenant</h2>
-              <Link className="text-sm text-[#d97400]" href="/lots?filter=48h">
-                Voir tout
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="section-kicker">Priorité terrain</p>
+                <h3 className="mt-2 text-xl font-semibold text-stone-900">Lots à traiter maintenant</h3>
+              </div>
+              <Link className="btn-secondary" href="/lots?filter=48h">
+                Ouvrir la liste complète
               </Link>
             </div>
 
-            <div className="mb-3 flex flex-wrap gap-2 text-xs">
-              <span className="rounded-full bg-emerald-100 px-2 py-1 text-emerald-700">Actifs: {active.length}</span>
-              <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-700">Bientôt DLC: {soon}</span>
-              <span className="rounded-full bg-red-100 px-2 py-1 text-red-700">Périmés: {expired}</span>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="badge badge-neutral">
+                <Package2 className="h-3.5 w-3.5" />
+                {active.length} lots actifs
+              </span>
+              <span className="badge badge-warning">{soon} bientôt DLC</span>
+              <span className="badge badge-danger">{expired} périmés</span>
             </div>
 
-            <div className="space-y-2">
-              {urgent.length === 0 && <p className="text-sm text-stone-500">Aucun lot urgent.</p>}
+            <div className="mt-5 space-y-3">
+              {urgent.length === 0 && (
+                <div className="rounded-[22px] border border-dashed border-[rgba(123,106,81,0.24)] bg-white/45 px-4 py-5 text-sm text-slate-600">
+                  Aucun lot urgent pour le moment. La situation stock est stable.
+                </div>
+              )}
               {urgent.map((batch) => (
                 <Link
-                  className="flex items-center justify-between rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm hover:border-orange-300"
+                  className="group flex items-center justify-between gap-4 rounded-[22px] border border-[rgba(123,106,81,0.12)] bg-white/72 px-4 py-4 transition hover:border-[rgba(216,109,31,0.22)] hover:bg-white"
                   href={`/lots/${batch.id}`}
                   key={batch.id}
                 >
-                  <div>
-                    <p className="font-semibold text-stone-800">{batch.product.name}</p>
-                    <p className="text-xs text-stone-500">DLC {formatParisDate(batch.dlcDate)}</p>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate text-base font-semibold text-stone-900">{batch.product.name}</p>
+                      <span className="badge badge-neutral">{batch.product.category}</span>
+                    </div>
+                    <p className="mt-2 text-sm text-slate-600">
+                      DLC {formatParisDate(batch.dlcDate)}{batch.location ? ` • ${batch.location}` : ''}
+                    </p>
                   </div>
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs font-semibold ${
-                      batch.status === 'EXPIRED' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
-                    }`}
-                  >
-                    {batch.status === 'EXPIRED' ? 'Périmé' : 'Urgent'}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className={`badge ${batch.status === 'EXPIRED' ? 'badge-danger' : 'badge-warning'}`}>
+                      {batch.status === 'EXPIRED' ? 'Périmé' : 'Urgent'}
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-slate-400 transition group-hover:text-[var(--brand)]" />
+                  </div>
                 </Link>
               ))}
             </div>
           </article>
 
           <article className="card soft-appear">
-            <h2 className="mb-3 text-lg font-semibold">Résumé stock</h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between rounded-xl bg-white px-3 py-2">
-                <span>Total lots actifs</span>
-                <strong>{active.length}</strong>
+            <p className="section-kicker">Résumé stock</p>
+            <h3 className="mt-2 text-xl font-semibold text-stone-900">Lecture rapide des volumes</h3>
+            <div className="mt-5 space-y-3 text-sm">
+              <div className="flex items-center justify-between rounded-[20px] bg-white/72 px-4 py-3">
+                <span className="text-slate-600">Total lots actifs</span>
+                <strong className="text-base text-stone-900">{active.length}</strong>
               </div>
-              <div className="flex items-center justify-between rounded-xl bg-white px-3 py-2">
-                <span>Lots bientôt DLC</span>
-                <strong>{soon}</strong>
+              <div className="flex items-center justify-between rounded-[20px] bg-white/72 px-4 py-3">
+                <span className="text-slate-600">Lots bientôt DLC</span>
+                <strong className="text-base text-amber-700">{soon}</strong>
               </div>
-              <div className="flex items-center justify-between rounded-xl bg-white px-3 py-2">
-                <span>Lots périmés</span>
-                <strong>{expired}</strong>
+              <div className="flex items-center justify-between rounded-[20px] bg-white/72 px-4 py-3">
+                <span className="text-slate-600">Lots périmés</span>
+                <strong className="text-base text-red-700">{expired}</strong>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-[24px] border border-[rgba(123,106,81,0.12)] bg-white/68 p-4">
+              <div className="flex items-center gap-3">
+                <span className="rounded-2xl bg-[#eef6ff] p-2 text-sky-700">
+                  <BellRing className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-stone-900">Rituel conseillé</p>
+                  <p className="text-sm leading-6 text-slate-600">Passez sur la liste “Sous 48 heures” en début et fin de service.</p>
+                </div>
               </div>
             </div>
           </article>
         </section>
 
-        <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_1fr]">
+        <section className="grid grid-cols-1 gap-4 xl:grid-cols-[0.95fr_1.05fr]">
           <article className="card soft-appear">
-            <h2 className="mb-3 text-lg font-semibold">Catégories principales</h2>
-            <div className="space-y-2">
-              {byCategory.map((item) => (
-                <div className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm" key={item.category}>
-                  <span>{item.category}</span>
-                  <strong>{item.count}</strong>
+            <p className="section-kicker">Top catégories</p>
+            <h3 className="mt-2 text-xl font-semibold text-stone-900">Où se concentre le stock actif</h3>
+            <div className="mt-5 space-y-3">
+              {byCategory.map((item, index) => (
+                <div className="flex items-center justify-between rounded-[20px] bg-white/72 px-4 py-3 text-sm" key={item.category}>
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-soft)] text-xs font-semibold text-[var(--brand)]">
+                      {index + 1}
+                    </span>
+                    <span className="font-medium text-stone-800">{item.category}</span>
+                  </div>
+                  <strong className="text-stone-900">{item.count}</strong>
                 </div>
               ))}
-              {byCategory.length === 0 && <p className="text-sm text-stone-500">Pas encore de données.</p>}
+              {byCategory.length === 0 && <p className="text-sm text-slate-600">Pas encore de données sur les catégories actives.</p>}
             </div>
           </article>
 

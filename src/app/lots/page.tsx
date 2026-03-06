@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { ArrowRight, Filter, PackageSearch, RotateCcw, Trash2 } from 'lucide-react';
 import { AuthGuard } from '@/components/auth-guard';
 
 type Batch = {
@@ -21,9 +22,18 @@ type Batch = {
 
 const statusLabel: Record<Batch['status'], string> = {
   OK: 'OK',
-  SOON: 'A consommer vite',
+  SOON: 'À consommer vite',
   EXPIRED: 'Périmé'
 };
+
+function formatParisDate(iso: string) {
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'Europe/Paris'
+  }).format(new Date(iso));
+}
 
 function LotsPageContent() {
   const searchParams = useSearchParams();
@@ -120,72 +130,107 @@ function LotsPageContent() {
 
   return (
     <AuthGuard>
-      <div className="space-y-3">
+      <div className="space-y-4 md:space-y-6">
         <section className="card soft-appear">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr] xl:items-end">
             <div>
-              <h1 className="text-xl font-bold text-stone-800">Lots & DLC</h1>
-              <p className="text-xs text-stone-600">Recherche rapide, filtres et actions de stock</p>
+              <p className="section-kicker">Stock & actions</p>
+              <h2 className="section-title mt-3 text-stone-900">Filtrez, priorisez et traitez les lots en un seul écran.</h2>
+              <p className="section-subtitle mt-3 max-w-2xl">
+                Les filtres rapides isolent les urgences, les critères avancés affinent la recherche, puis les actions stock restent accessibles sans quitter la liste.
+              </p>
             </div>
-            <Link className="btn-primary" href="/reception">
-              + Nouveau lot
-            </Link>
+            <div className="flex flex-wrap gap-3 xl:justify-end">
+              <Link className="btn-secondary" href="/reception">
+                Nouveau lot
+              </Link>
+              <Link className="btn-primary" href="/lots">
+                Vue complète
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-1 gap-3 xl:grid-cols-4">
+          <div className="metric-card soft-appear">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Affichés</p>
+            <p className="mt-3 text-4xl font-semibold text-stone-900">{filtered.length}</p>
+            <p className="mt-3 text-sm text-slate-600">Résultat après filtres appliqués.</p>
+          </div>
+          <div className="metric-card soft-appear">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Actifs</p>
+            <p className="mt-3 text-4xl font-semibold text-emerald-700">{activeCount}</p>
+            <p className="mt-3 text-sm text-slate-600">Lots encore présents en stock.</p>
+          </div>
+          <div className="metric-card soft-appear">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Bientôt DLC</p>
+            <p className="mt-3 text-4xl font-semibold text-amber-700">{soonCount}</p>
+            <p className="mt-3 text-sm text-slate-600">À traiter sous 48 heures.</p>
+          </div>
+          <div className="metric-card soft-appear">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Périmés</p>
+            <p className="mt-3 text-4xl font-semibold text-red-700">{expiredCount}</p>
+            <p className="mt-3 text-sm text-slate-600">Demandent une décision immédiate.</p>
           </div>
         </section>
 
         <section className="card soft-appear">
-          <div className="mb-2 flex flex-wrap gap-2 text-xs">
-            <span className="rounded-full bg-stone-100 px-2 py-1 text-stone-700">Affichés: {filtered.length}</span>
-            <span className="rounded-full bg-emerald-100 px-2 py-1 text-emerald-700">Actifs: {activeCount}</span>
-            <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-700">Bientôt DLC: {soonCount}</span>
-            <span className="rounded-full bg-red-100 px-2 py-1 text-red-700">Périmés: {expiredCount}</span>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Link className={`btn-secondary ${quickFilter === 'today' ? 'ring-2 ring-amber-300' : ''}`} href="/lots?filter=today">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link className={`${quickFilter === 'today' ? 'btn-primary' : 'btn-secondary'}`} href="/lots?filter=today">
               Aujourd&apos;hui
             </Link>
-            <Link className={`btn-secondary ${quickFilter === '48h' ? 'ring-2 ring-amber-300' : ''}`} href="/lots?filter=48h">
+            <Link className={`${quickFilter === '48h' ? 'btn-primary' : 'btn-secondary'}`} href="/lots?filter=48h">
               Sous 48h
             </Link>
-            <Link className={`btn-secondary ${quickFilter === 'expired' ? 'ring-2 ring-red-300' : ''}`} href="/lots?filter=expired">
+            <Link className={`${quickFilter === 'expired' ? 'btn-primary' : 'btn-secondary'}`} href="/lots?filter=expired">
               Périmés
             </Link>
-            <Link className="btn-secondary" href="/lots">
-              Reset
+            <Link className="btn-ghost" href="/lots">
+              <RotateCcw className="h-4 w-4" />
+              Réinitialiser
             </Link>
+          </div>
+
+          <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_auto]">
+            <label className="text-sm font-medium text-stone-800">
+              Filtre catégorie
+              <select className="select mt-2" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+                <option value="">Toutes</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm font-medium text-stone-800">
+              Filtre emplacement
+              <select className="select mt-2" value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)}>
+                <option value="">Tous</option>
+                {locations.map((location) => (
+                  <option key={location} value={location}>
+                    {location}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="flex items-end">
+              <div className="flex w-full items-center gap-2 rounded-[22px] border border-[rgba(123,106,81,0.12)] bg-white/58 px-4 py-3 text-sm text-slate-600">
+                <Filter className="h-4 w-4" />
+                Page {page}/{totalPages} • {totalCount} lots
+              </div>
+            </div>
           </div>
         </section>
 
-        <section className="card grid grid-cols-1 gap-2 sm:grid-cols-2 soft-appear">
-          <label className="text-sm">
-            Filtre catégorie
-            <select className="input mt-1" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-              <option value="">Toutes</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-sm">
-            Filtre emplacement
-            <select className="input mt-1" value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)}>
-              <option value="">Tous</option>
-              {locations.map((location) => (
-                <option key={location} value={location}>
-                  {location}
-                </option>
-              ))}
-            </select>
-          </label>
-        </section>
-
-        <section className="card flex items-center justify-between soft-appear">
-          <p className="text-sm text-stone-600">
-            Page {page}/{totalPages} • {totalCount} lots
-          </p>
+        <section className="flex flex-wrap items-center justify-between gap-3 soft-appear">
+          <div className="flex flex-wrap gap-2">
+            <span className="badge badge-neutral">{filtered.length} visibles</span>
+            <span className="badge badge-success">{activeCount} actifs</span>
+            <span className="badge badge-warning">{soonCount} bientôt DLC</span>
+            <span className="badge badge-danger">{expiredCount} périmés</span>
+          </div>
           <div className="flex gap-2">
             <button className="btn-secondary" disabled={page <= 1} onClick={() => load(page - 1)} type="button">
               Précédent
@@ -196,45 +241,67 @@ function LotsPageContent() {
           </div>
         </section>
 
-        {filtered.map((batch) => (
-          <article className="card soft-appear" key={batch.id}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="font-semibold">{batch.product.name}</h3>
-                <p className="text-xs text-stone-600">EAN {batch.product.ean}</p>
-                <p className="text-xs text-stone-600">DLC {batch.dlcDate.slice(0, 10)}</p>
-                <p className="text-xs text-stone-600">Quantité restante {batch.quantityRemaining}</p>
-                <p className="text-xs text-stone-500">{batch.location ?? 'Emplacement non renseigné'}</p>
-              </div>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  batch.status === 'EXPIRED'
-                    ? 'bg-red-100 text-red-800'
-                    : batch.status === 'SOON'
-                      ? 'bg-amber-100 text-amber-800'
-                      : 'bg-emerald-100 text-emerald-800'
-                }`}
-              >
-                {statusLabel[batch.status]}
-              </span>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button className="btn-secondary" onClick={() => sell(batch.id)} type="button">
-                Vendu -1
-              </button>
-              <button className="btn-secondary" onClick={() => discard(batch.id)} type="button">
-                Marquer jeté
-              </button>
-              <Link className="btn-secondary" href={`/lots/${batch.id}`}>
-                Détails
-              </Link>
-            </div>
-          </article>
-        ))}
+        <section className="space-y-3">
+          {filtered.map((batch) => (
+            <article className="card soft-appear" key={batch.id}>
+              <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-lg font-semibold text-stone-900">{batch.product.name}</h3>
+                    <span className={`badge ${batch.status === 'EXPIRED' ? 'badge-danger' : batch.status === 'SOON' ? 'badge-warning' : 'badge-success'}`}>
+                      {statusLabel[batch.status]}
+                    </span>
+                    <span className="badge badge-neutral">{batch.product.category}</span>
+                  </div>
+                  <div className="mt-3 grid gap-3 text-sm text-slate-600 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="rounded-[18px] bg-white/70 px-4 py-3">
+                      <p className="text-xs uppercase tracking-[0.18em] text-slate-500">EAN</p>
+                      <p className="mt-1 font-medium text-stone-800">{batch.product.ean}</p>
+                    </div>
+                    <div className="rounded-[18px] bg-white/70 px-4 py-3">
+                      <p className="text-xs uppercase tracking-[0.18em] text-slate-500">DLC</p>
+                      <p className="mt-1 font-medium text-stone-800">{formatParisDate(batch.dlcDate)}</p>
+                    </div>
+                    <div className="rounded-[18px] bg-white/70 px-4 py-3">
+                      <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Quantité</p>
+                      <p className="mt-1 font-medium text-stone-800">{batch.quantityRemaining}</p>
+                    </div>
+                    <div className="rounded-[18px] bg-white/70 px-4 py-3">
+                      <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Emplacement</p>
+                      <p className="mt-1 font-medium text-stone-800">{batch.location ?? 'Non renseigné'}</p>
+                    </div>
+                  </div>
+                </div>
 
-        {filtered.length === 0 && (
-          <section className="card text-sm text-stone-600 soft-appear">Aucun lot ne correspond aux filtres actuels.</section>
-        )}
+                <div className="flex flex-wrap gap-2 lg:justify-end">
+                  <button className="btn-secondary" onClick={() => sell(batch.id)} type="button">
+                    Vendu -1
+                  </button>
+                  <button className="btn-secondary" onClick={() => discard(batch.id)} type="button">
+                    <Trash2 className="h-4 w-4" />
+                    Marquer jeté
+                  </button>
+                  <Link className="btn-primary" href={`/lots/${batch.id}`}>
+                    Détails
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            </article>
+          ))}
+
+          {filtered.length === 0 && (
+            <section className="card soft-appear text-center">
+              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--brand-soft)] text-[var(--brand)]">
+                <PackageSearch className="h-6 w-6" />
+              </span>
+              <h3 className="mt-4 text-lg font-semibold text-stone-900">Aucun lot ne correspond aux filtres</h3>
+              <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">
+                Ajustez la catégorie, l’emplacement ou le filtre rapide pour retrouver les lots attendus.
+              </p>
+            </section>
+          )}
+        </section>
       </div>
     </AuthGuard>
   );
@@ -242,7 +309,7 @@ function LotsPageContent() {
 
 export default function LotsPage() {
   return (
-    <Suspense fallback={<div className="card">Chargement…</div>}>
+    <Suspense fallback={<div className="loading-card text-sm text-slate-600">Chargement de la liste des lots…</div>}>
       <LotsPageContent />
     </Suspense>
   );
