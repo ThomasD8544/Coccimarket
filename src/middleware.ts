@@ -5,6 +5,10 @@ function withSecurityHeaders(res: NextResponse) {
   res.headers.set('X-Frame-Options', 'SAMEORIGIN');
   res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.headers.set('Permissions-Policy', 'camera=(self), microphone=()');
+  // Reduce stale UI/RSC mismatches after deployments (notably on iOS/PWA caches)
+  res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  res.headers.set('Pragma', 'no-cache');
+  res.headers.set('Expires', '0');
   return res;
 }
 
