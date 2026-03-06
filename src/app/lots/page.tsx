@@ -105,24 +105,49 @@ function LotsPageContent() {
     )
   ).sort();
 
+  const activeCount = filtered.filter((b) => b.quantityRemaining > 0).length;
+  const soonCount = filtered.filter((b) => b.status === 'SOON').length;
+  const expiredCount = filtered.filter((b) => b.status === 'EXPIRED').length;
+
   return (
     <AuthGuard>
       <div className="space-y-3">
-        {quickFilter && (
-          <section className="card flex items-center justify-between gap-2 bg-amber-50 soft-appear">
-            <p className="text-sm">
-              Filtre actif:{' '}
-              {quickFilter === 'today'
-                ? 'à traiter aujourd’hui'
-                : quickFilter === '48h'
-                  ? 'à traiter sous 48h'
-                  : 'périmés'}
-            </p>
-            <Link className="btn-secondary" href="/lots">
-              Retirer
+        <section className="card soft-appear">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h1 className="text-xl font-bold text-stone-800">Lots & DLC</h1>
+              <p className="text-xs text-stone-600">Recherche rapide, filtres et actions de stock</p>
+            </div>
+            <Link className="btn-primary" href="/reception">
+              + Nouveau lot
             </Link>
-          </section>
-        )}
+          </div>
+        </section>
+
+        <section className="card soft-appear">
+          <div className="mb-2 flex flex-wrap gap-2 text-xs">
+            <span className="rounded-full bg-stone-100 px-2 py-1 text-stone-700">Affichés: {filtered.length}</span>
+            <span className="rounded-full bg-emerald-100 px-2 py-1 text-emerald-700">Actifs: {activeCount}</span>
+            <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-700">Bientôt DLC: {soonCount}</span>
+            <span className="rounded-full bg-red-100 px-2 py-1 text-red-700">Périmés: {expiredCount}</span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Link className={`btn-secondary ${quickFilter === 'today' ? 'ring-2 ring-amber-300' : ''}`} href="/lots?filter=today">
+              Aujourd&apos;hui
+            </Link>
+            <Link className={`btn-secondary ${quickFilter === '48h' ? 'ring-2 ring-amber-300' : ''}`} href="/lots?filter=48h">
+              Sous 48h
+            </Link>
+            <Link className={`btn-secondary ${quickFilter === 'expired' ? 'ring-2 ring-red-300' : ''}`} href="/lots?filter=expired">
+              Périmés
+            </Link>
+            <Link className="btn-secondary" href="/lots">
+              Reset
+            </Link>
+          </div>
+        </section>
+
         <section className="card grid grid-cols-1 gap-2 sm:grid-cols-2 soft-appear">
           <label className="text-sm">
             Filtre catégorie
@@ -156,6 +181,7 @@ function LotsPageContent() {
                 <p className="text-xs text-stone-600">EAN {batch.product.ean}</p>
                 <p className="text-xs text-stone-600">DLC {batch.dlcDate.slice(0, 10)}</p>
                 <p className="text-xs text-stone-600">Quantité restante {batch.quantityRemaining}</p>
+                <p className="text-xs text-stone-500">{batch.location ?? 'Emplacement non renseigné'}</p>
               </div>
               <span
                 className={`rounded-full px-3 py-1 text-xs font-semibold ${
@@ -182,6 +208,10 @@ function LotsPageContent() {
             </div>
           </article>
         ))}
+
+        {filtered.length === 0 && (
+          <section className="card text-sm text-stone-600 soft-appear">Aucun lot ne correspond aux filtres actuels.</section>
+        )}
       </div>
     </AuthGuard>
   );

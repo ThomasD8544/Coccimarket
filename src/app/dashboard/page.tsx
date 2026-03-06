@@ -32,6 +32,15 @@ function formatParisDate(iso: string) {
   }).format(new Date(iso));
 }
 
+function parisNowLabel() {
+  return new Intl.DateTimeFormat('fr-FR', {
+    weekday: 'long',
+    day: '2-digit',
+    month: '2-digit',
+    timeZone: 'Europe/Paris'
+  }).format(new Date());
+}
+
 export default function DashboardPage() {
   const [counters, setCounters] = useState<Counters | null>(null);
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -60,9 +69,29 @@ export default function DashboardPage() {
       .slice(0, 5);
   }, [active]);
 
+  const soon = active.filter((b) => b.status === 'SOON').length;
+  const expired = active.filter((b) => b.status === 'EXPIRED').length;
+
   return (
     <AuthGuard>
       <div className="space-y-4">
+        <section className="card soft-appear">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="text-xl font-bold text-stone-800">Tableau de bord DLC</h1>
+              <p className="text-sm text-stone-600">{parisNowLabel()} • vue opérationnelle du banc traiteur</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link className="btn-secondary" href="/reception">
+                + Réception rapide
+              </Link>
+              <Link className="btn-primary" href="/lots">
+                Ouvrir les lots
+              </Link>
+            </div>
+          </div>
+        </section>
+
         <section className="grid grid-cols-1 gap-3 lg:grid-cols-3">
           <Link className="card block border-amber-300 soft-appear hover:shadow-md" href="/lots?filter=today">
             <p className="text-xs uppercase tracking-wide text-stone-500">A traiter aujourd&apos;hui</p>
@@ -88,6 +117,12 @@ export default function DashboardPage() {
               <Link className="text-sm text-[#d97400]" href="/lots?filter=48h">
                 Voir tout
               </Link>
+            </div>
+
+            <div className="mb-3 flex flex-wrap gap-2 text-xs">
+              <span className="rounded-full bg-emerald-100 px-2 py-1 text-emerald-700">Actifs: {active.length}</span>
+              <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-700">Bientôt DLC: {soon}</span>
+              <span className="rounded-full bg-red-100 px-2 py-1 text-red-700">Périmés: {expired}</span>
             </div>
 
             <div className="space-y-2">
@@ -123,11 +158,11 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center justify-between rounded-xl bg-white px-3 py-2">
                 <span>Lots bientôt DLC</span>
-                <strong>{active.filter((b) => b.status === 'SOON').length}</strong>
+                <strong>{soon}</strong>
               </div>
               <div className="flex items-center justify-between rounded-xl bg-white px-3 py-2">
                 <span>Lots périmés</span>
-                <strong>{active.filter((b) => b.status === 'EXPIRED').length}</strong>
+                <strong>{expired}</strong>
               </div>
             </div>
           </article>
