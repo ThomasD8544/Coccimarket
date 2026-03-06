@@ -1,4 +1,4 @@
-const CACHE_NAME = 'coccimarket-v2';
+const CACHE_NAME = 'coccimarket-v3';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -15,28 +15,9 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Important: no offline/cache strategy for app pages/assets to avoid stale Next.js bundles
 self.addEventListener('fetch', (event) => {
-  const req = event.request;
-
-  // Never cache HTML pages (prevents stale app/server action mismatches)
-  if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
-    event.respondWith(fetch(req));
-    return;
-  }
-
-  // Cache-first for static assets only
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) return cached;
-      return fetch(req).then((res) => {
-        if (res && res.ok && req.method === 'GET') {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-        }
-        return res;
-      });
-    })
-  );
+  event.respondWith(fetch(event.request));
 });
 
 self.addEventListener('push', (event) => {
