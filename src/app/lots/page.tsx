@@ -73,7 +73,7 @@ function LotsPageContent() {
     []
   );
 
-  function load(targetPage = page) {
+  const load = useCallback((targetPage = page) => {
     fetch(`/api/batches?page=${targetPage}&pageSize=${pageSize}`)
       .then((r) => r.json())
       .then((data) => {
@@ -82,11 +82,11 @@ function LotsPageContent() {
         setTotalPages(data.pagination?.totalPages ?? 1);
         setTotalCount(data.pagination?.totalCount ?? data.batches.length);
       });
-  }
+  }, [page, pageSize]);
 
   useEffect(() => {
     load(1);
-  }, []);
+  }, [load]);
 
   const filtered = useMemo(() => {
     return batches.filter((batch) => {

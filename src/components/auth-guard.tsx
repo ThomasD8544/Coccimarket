@@ -94,7 +94,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return (
       <main className="app-shell flex min-h-screen items-center justify-center px-6">
         <div className="glass-panel rounded-[28px] px-6 py-5 text-sm text-stone-700">
-          Vérification de la session et chargement de l'espace équipe…
+          Vérification de la session et chargement de l&apos;espace équipe…
         </div>
       </main>
     );

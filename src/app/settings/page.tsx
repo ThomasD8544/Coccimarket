@@ -148,7 +148,7 @@ export default function SettingsPage() {
             </label>
 
             <p className="text-sm leading-6 text-slate-600">
-              Conseil: gardez l'exécution quotidienne alignée sur l'ouverture ou la préparation du banc pour que les alertes arrivent avant le rush.
+              Conseil: gardez l&apos;exécution quotidienne alignée sur l&apos;ouverture ou la préparation du banc pour que les alertes arrivent avant le rush.
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -219,7 +219,7 @@ export default function SettingsPage() {
                 Envoyer un email de test
               </button>
               <p className="text-sm leading-6 text-slate-600">
-                Utilisez une boîte réelle pour vérifier à la fois la délivrabilité et le rendu du message reçu par l'équipe.
+                Utilisez une boîte réelle pour vérifier à la fois la délivrabilité et le rendu du message reçu par l&apos;équipe.
               </p>
             </section>
           </div>
