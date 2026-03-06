@@ -34,3 +34,20 @@ docker run --rm \
 ```
 
 Cela génère `results_*.csv` dans ce dossier.
+
+## 3) Interface Web locale (host + users directement)
+
+Si tu veux choisir le domaine cible et le nombre d'utilisateurs depuis l'UI sur `localhost`:
+
+```bash
+cd /home/ubuntu/.openclaw/workspace/Coccimarket/loadtest
+chmod +x local-ui.sh
+
+# Mets ici uniquement tes domaines autorisés (séparés par des virgules)
+ALLOWED_HOSTS='coccimarket-dlc.duckdns.org,staging.mon-domaine.fr' ./local-ui.sh
+```
+
+Puis ouvre `http://localhost:8089` et renseigne:
+- Host (dans la whitelist ALLOWED_HOSTS)
+- Number of users
+- Spawn rate
