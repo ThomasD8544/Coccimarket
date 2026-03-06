@@ -108,13 +108,13 @@ export default function ReceptionPage() {
     <AuthGuard>
       <div className="space-y-3">
         <section className="card soft-appear">
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between gap-2">
             <div>
               <h2 className="text-lg font-semibold">Réception livraison</h2>
               <p className="text-xs text-stone-600">Scan iPhone EAN13 / QR puis validation du lot</p>
             </div>
-            <button className="btn-secondary" onClick={() => setShowScanner((v) => !v)} type="button">
-              {showScanner ? 'Fermer scan' : 'Scanner'}
+            <button className="btn-primary" onClick={() => setShowScanner((v) => !v)} type="button">
+              {showScanner ? 'Fermer scan' : 'Lancer scan'}
             </button>
           </div>
           {showScanner && <Scanner onDetected={loadProductByEan} />}
@@ -194,9 +194,11 @@ export default function ReceptionPage() {
             </label>
           </div>
 
-          <button className="btn-primary w-full" disabled={!canSubmit} type="submit">
-            Enregistrer le lot
-          </button>
+          <div className="sticky bottom-[calc(0.5rem+env(safe-area-inset-bottom))] z-20 rounded-2xl border border-stone-200 bg-[#fffaf2]/95 p-2 backdrop-blur">
+            <button className="btn-primary w-full" disabled={!canSubmit} type="submit">
+              Enregistrer le lot
+            </button>
+          </div>
 
           {message && (
             <p

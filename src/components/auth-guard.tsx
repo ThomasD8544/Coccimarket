@@ -107,11 +107,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">
+        <main className="flex-1 p-4 pb-[calc(7rem+env(safe-area-inset-bottom))] md:p-6 md:pb-6">
           <div className="mx-auto w-full max-w-6xl">{children}</div>
         </main>
 
-        <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-stone-200 bg-[#fffaf2] p-2 md:hidden">
+        <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-stone-200 bg-[#fffaf2] p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:hidden">
           <div className={`grid gap-2 ${visibleNavItems.length >= 4 ? 'grid-cols-4' : 'grid-cols-3'}`}>
             {visibleNavItems.map((item) => {
               const active = pathname.startsWith(item.href);
