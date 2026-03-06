@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { AuthGuard } from '@/components/auth-guard';
 
 type Batch = {
@@ -25,7 +25,7 @@ const statusLabel: Record<Batch['status'], string> = {
   EXPIRED: 'Périmé'
 };
 
-export default function LotsPage() {
+function LotsPageContent() {
   const searchParams = useSearchParams();
   const [batches, setBatches] = useState<Batch[]>([]);
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -47,14 +47,17 @@ export default function LotsPage() {
     return `${year}-${month}-${day}`;
   }
 
-  function diffDaysFromTodayParis(dlcIso: string) {
-    const today = parisYmd(new Date());
-    const dlcYmd = parisYmd(new Date(dlcIso));
-    const todayUtc = new Date(`${today}T00:00:00Z`).getTime();
-    const dlcUtc = new Date(`${dlcYmd}T00:00:00Z`).getTime();
+  const diffDaysFromTodayParis = useCallback(
+    (dlcIso: string) => {
+      const today = parisYmd(new Date());
+      const dlcYmd = parisYmd(new Date(dlcIso));
+      const todayUtc = new Date(`${today}T00:00:00Z`).getTime();
+      const dlcUtc = new Date(`${dlcYmd}T00:00:00Z`).getTime();
 
-    return Math.round((dlcUtc - todayUtc) / (24 * 60 * 60 * 1000));
-  }
+      return Math.round((dlcUtc - todayUtc) / (24 * 60 * 60 * 1000));
+    },
+    []
+  );
 
   function load() {
     fetch('/api/batches')
@@ -77,7 +80,7 @@ export default function LotsPage() {
       if (locationFilter && (batch.location ?? '') !== locationFilter) return false;
       return true;
     });
-  }, [batches, categoryFilter, locationFilter, quickFilter]);
+  }, [batches, categoryFilter, locationFilter, quickFilter, diffDaysFromTodayParis]);
 
   async function sell(id: string) {
     await fetch(`/api/batches/${id}/sell`, {
@@ -94,7 +97,13 @@ export default function LotsPage() {
   }
 
   const categories = Array.from(new Set(batches.map((b) => b.product.category))).sort();
-  const locations = Array.from(new Set(batches.map((b) => b.location).filter(Boolean))).sort();
+  const locations = Array.from(
+    new Set(
+      batches
+        .map((b) => b.location)
+        .filter((location): location is string => typeof location === 'string' && location.length > 0)
+    )
+  ).sort();
 
   return (
     <AuthGuard>
@@ -175,5 +184,13 @@ export default function LotsPage() {
         ))}
       </div>
     </AuthGuard>
+  );
+}
+
+export default function LotsPage() {
+  return (
+    <Suspense fallback={<div className="card">Chargement…</div>}>
+      <LotsPageContent />
+    </Suspense>
   );
 }
