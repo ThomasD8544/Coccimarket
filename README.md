@@ -166,6 +166,6 @@ Lancement manuel local:
 ```bash
 LOADTEST_EMAIL='admin@coccimarket.local' \
 LOADTEST_PASSWORD='admin1234' \
-TARGET_HOST='https://staging.coccimarket-dlc.duckdns.org' \
+TARGET_HOST='https://coccimarket-staging.duckdns.org' \
 ./scripts/run-perf-smoke.sh
 ```

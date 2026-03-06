@@ -20,7 +20,7 @@ jobs:
             cd /home/ubuntu/.openclaw/workspace/Coccimarket
             export LOADTEST_EMAIL='${{ secrets.LOADTEST_EMAIL }}'
             export LOADTEST_PASSWORD='${{ secrets.LOADTEST_PASSWORD }}'
-            export TARGET_HOST='https://staging.coccimarket-dlc.duckdns.org'
+            export TARGET_HOST='https://coccimarket-staging.duckdns.org'
             export USERS='25'
             export SPAWN='5'
             export DURATION='3m'

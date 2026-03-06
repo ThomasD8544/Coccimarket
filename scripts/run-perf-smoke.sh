@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR/loadtest"
 
-TARGET_HOST="${TARGET_HOST:-https://staging.coccimarket-dlc.duckdns.org}"
+TARGET_HOST="${TARGET_HOST:-https://coccimarket-staging.duckdns.org}"
 USERS="${USERS:-25}"
 SPAWN="${SPAWN:-5}"
 DURATION="${DURATION:-3m}"

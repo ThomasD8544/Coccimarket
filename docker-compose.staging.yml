@@ -21,7 +21,7 @@ services:
       - .env.staging
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/coccimarket_staging?schema=public
-      APP_URL: https://staging.coccimarket-dlc.duckdns.org
+      APP_URL: https://coccimarket-staging.duckdns.org
       TZ: Europe/Paris
       NODE_ENV: production
     depends_on:
