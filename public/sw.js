@@ -1,15 +1,40 @@
-const CACHE_NAME = 'coccimarket-v1';
-const URLS_TO_CACHE = ['/dashboard', '/lots', '/reception'];
+const CACHE_NAME = 'coccimarket-v2';
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(URLS_TO_CACHE)));
+  self.skipWaiting();
+  event.waitUntil(caches.open(CACHE_NAME));
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)));
+      await self.clients.claim();
+    })()
+  );
 });
 
 self.addEventListener('fetch', (event) => {
+  const req = event.request;
+
+  // Never cache HTML pages (prevents stale app/server action mismatches)
+  if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
+    event.respondWith(fetch(req));
+    return;
+  }
+
+  // Cache-first for static assets only
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (response) return response;
-      return fetch(event.request);
+    caches.match(req).then((cached) => {
+      if (cached) return cached;
+      return fetch(req).then((res) => {
+        if (res && res.ok && req.method === 'GET') {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+        }
+        return res;
+      });
     })
   );
 });
