@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: locust-worker
+  namespace: loadtest
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: locust-worker
+  template:
+    metadata:
+      labels:
+        app: locust-worker
+    spec:
+      containers:
+        - name: worker
+          image: locustio/locust:2.37.14
+          args: ["-f", "/mnt/locust/locustfile.py", "--worker", "--master-host", "locust-master"]
+          env:
+            - name: ALLOWED_HOSTS
+              value: "coccimarket-dlc.duckdns.org"
+            - name: ERROR_RATIO_ABORT_THRESHOLD
+              value: "0.05"
+            - name: MIN_REQUESTS_BEFORE_ABORT
+              value: "500"
+            - name: PER_USER_RPS
+              value: "2"
+          volumeMounts:
+            - name: locust-scripts
+              mountPath: /mnt/locust
+      volumes:
+        - name: locust-scripts
+          configMap:
+            name: locust-scripts
