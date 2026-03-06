@@ -69,9 +69,13 @@ export async function POST(req: NextRequest) {
     }
   });
 
+  const secureCookie =
+    process.env.COOKIE_SECURE === 'true' ||
+    (process.env.COOKIE_SECURE !== 'false' && process.env.NODE_ENV === 'production');
+
   response.cookies.set(AUTH_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: secureCookie,
     sameSite: 'strict',
     path: '/',
     maxAge: 60 * 60 * 24 * 7,

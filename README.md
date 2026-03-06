@@ -36,6 +36,7 @@ Copier `.env.example` en `.env` puis adapter:
 - Option TLS SMTP: `SMTP_SECURE=true` (souvent `true` pour port 465, sinon `false`)
 - Push: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
 - Front push: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`
+- Cookie HTTPS: `COOKIE_SECURE=true` (mettre `false` uniquement en local HTTP)
 
 ## Démarrage local
 
