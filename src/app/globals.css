@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --bg: #f2f0eb;
+  --text: #202125;
+  --brand-dark: #5f6163;
+  --brand-orange: #f08a16;
+  --brand-cream: #fdfaf4;
+}
+
+body {
+  font-family: 'Avenir Next', 'Nunito', 'Trebuchet MS', sans-serif;
+  background:
+    radial-gradient(1200px 500px at 90% -5%, #f2ad58 0%, transparent 45%),
+    radial-gradient(800px 400px at 10% -10%, #87898c 0%, transparent 40%),
+    var(--bg);
+  color: var(--text);
+  @apply antialiased;
+}
+
+.card {
+  @apply rounded-2xl border p-4 shadow-sm;
+  border-color: #ded8ca;
+  background: linear-gradient(180deg, #fffdf7 0%, #fff8ed 100%);
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition;
+}
+
+.btn-primary {
+  @apply btn text-white;
+  background: linear-gradient(135deg, #ef8a1a 0%, #d97400 100%);
+  box-shadow: 0 10px 20px -12px rgba(240, 138, 22, 0.9);
+}
+
+.btn-secondary {
+  @apply btn border;
+  border-color: #d3cec0;
+  background: #fffcf7;
+  color: #36383d;
+}
+
+.input {
+  @apply w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none;
+  border-color: #cfc8b8;
+}
+
+.input:focus {
+  border-color: var(--brand-orange);
+  box-shadow: 0 0 0 3px rgba(240, 138, 22, 0.15);
+}
+
+.soft-appear {
+  animation: soft-appear 320ms ease-out both;
+}
+
+@keyframes soft-appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

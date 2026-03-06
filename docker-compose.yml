@@ -1,0 +1,42 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: coccimarket
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/coccimarket?schema=public
+      APP_URL: http://localhost:3000
+      TZ: Europe/Paris
+    depends_on:
+      - db
+    ports:
+      - '3000:3000'
+
+  worker:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/coccimarket?schema=public
+      TZ: Europe/Paris
+    depends_on:
+      - db
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run notify:cron"
+
+volumes:
+  pgdata:

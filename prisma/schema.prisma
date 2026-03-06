@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  EMPLOYEE
+}
+
+enum BatchState {
+  ACTIVE
+  DISCARDED
+  DEPLETED
+}
+
+model User {
+  id                  String             @id @default(cuid())
+  email               String             @unique
+  passwordHash        String
+  role                UserRole           @default(EMPLOYEE)
+  pushEnabled         Boolean            @default(false)
+  emailEnabled        Boolean            @default(true)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  notificationLogs    NotificationLog[]
+  pushSubscriptions   PushSubscription[]
+}
+
+model Product {
+  id                   String   @id @default(cuid())
+  ean                  String   @unique
+  name                 String
+  category             String
+  defaultShelfLifeDays Int?
+  supplier             String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  batches              Batch[]
+}
+
+model Batch {
+  id                String            @id @default(cuid())
+  productId         String
+  quantityInitial   Int
+  quantityRemaining Int
+  dlcDate           DateTime
+  lotNumber         String?
+  location          String?
+  state             BatchState        @default(ACTIVE)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  product           Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  notificationLogs  NotificationLog[]
+
+  @@index([dlcDate])
+  @@index([state])
+}
+
+model NotificationLog {
+  id        String   @id @default(cuid())
+  batchId   String
+  userId    String
+  type      String
+  sentTo    String
+  sentAt    DateTime @default(now())
+  batch     Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sentAt])
+  @@unique([batchId, userId, type])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dhKey String
+  authKey   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Setting {
+  id               String   @id @default("singleton")
+  alertDaysBefore  Int      @default(2)
+  dailyJobHour     Int      @default(7)
+  timezone         String   @default("Europe/Paris")
+  updatedAt        DateTime @updatedAt
+}
