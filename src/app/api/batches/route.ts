@@ -32,25 +32,42 @@ export async function GET(req: NextRequest) {
   const category = searchParams.get('category');
   const location = searchParams.get('location');
   const state = searchParams.get('state');
+  const page = Math.max(1, Number(searchParams.get('page') ?? 1));
+  const pageSizeRaw = Number(searchParams.get('pageSize') ?? 50);
+  const pageSize = Math.min(200, Math.max(1, pageSizeRaw));
 
-  const batches = await prisma.batch.findMany({
-    where: {
-      ...(category ? { product: { category } } : {}),
-      ...(location ? { location } : {}),
-      ...(state ? { state: state as BatchState } : {})
-    },
-    include: { product: true },
-    orderBy: [{ dlcDate: 'asc' }, { createdAt: 'desc' }]
-  });
+  const where = {
+    ...(category ? { product: { category } } : {}),
+    ...(location ? { location } : {}),
+    ...(state ? { state: state as BatchState } : {})
+  };
 
-  const settings = await prisma.setting.findUnique({ where: { id: 'singleton' } });
+  const [batches, totalCount, settings] = await Promise.all([
+    prisma.batch.findMany({
+      where,
+      include: { product: true },
+      orderBy: [{ dlcDate: 'asc' }, { createdAt: 'desc' }],
+      skip: (page - 1) * pageSize,
+      take: pageSize
+    }),
+    prisma.batch.count({ where }),
+    prisma.setting.findUnique({ where: { id: 'singleton' } })
+  ]);
 
   const data = batches.map((batch) => ({
     ...batch,
     status: statusFromDlc(batch.dlcDate, settings?.alertDaysBefore ?? 2)
   }));
 
-  const payload = { batches: data };
+  const payload = {
+    batches: data,
+    pagination: {
+      page,
+      pageSize,
+      totalCount,
+      totalPages: Math.max(1, Math.ceil(totalCount / pageSize))
+    }
+  };
   setCache(batchesCache, cacheKey, payload, CACHE_TTL_MS);
 
   return json(payload);

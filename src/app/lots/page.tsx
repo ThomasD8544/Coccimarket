@@ -30,6 +30,10 @@ function LotsPageContent() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 50;
   const quickFilter = searchParams.get('filter');
 
   function parisYmd(date: Date) {
@@ -59,14 +63,19 @@ function LotsPageContent() {
     []
   );
 
-  function load() {
-    fetch('/api/batches')
+  function load(targetPage = page) {
+    fetch(`/api/batches?page=${targetPage}&pageSize=${pageSize}`)
       .then((r) => r.json())
-      .then((data) => setBatches(data.batches));
+      .then((data) => {
+        setBatches(data.batches);
+        setPage(data.pagination?.page ?? targetPage);
+        setTotalPages(data.pagination?.totalPages ?? 1);
+        setTotalCount(data.pagination?.totalCount ?? data.batches.length);
+      });
   }
 
   useEffect(() => {
-    load();
+    load(1);
   }, []);
 
   const filtered = useMemo(() => {
@@ -171,6 +180,20 @@ function LotsPageContent() {
               ))}
             </select>
           </label>
+        </section>
+
+        <section className="card flex items-center justify-between soft-appear">
+          <p className="text-sm text-stone-600">
+            Page {page}/{totalPages} • {totalCount} lots
+          </p>
+          <div className="flex gap-2">
+            <button className="btn-secondary" disabled={page <= 1} onClick={() => load(page - 1)} type="button">
+              Précédent
+            </button>
+            <button className="btn-secondary" disabled={page >= totalPages} onClick={() => load(page + 1)} type="button">
+              Suivant
+            </button>
+          </div>
         </section>
 
         {filtered.map((batch) => (

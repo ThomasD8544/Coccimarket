@@ -59,6 +59,7 @@ model Batch {
 
   @@index([dlcDate])
   @@index([state])
+  @@index([state, quantityRemaining, dlcDate])
 }
 
 model NotificationLog {
