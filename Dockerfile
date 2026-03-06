@@ -6,6 +6,8 @@ RUN npm install
 
 FROM base AS builder
 WORKDIR /app
+ARG NEXT_PUBLIC_VAPID_PUBLIC_KEY
+ENV NEXT_PUBLIC_VAPID_PUBLIC_KEY=$NEXT_PUBLIC_VAPID_PUBLIC_KEY
 COPY . .
 RUN npx prisma generate
 RUN npm run build
