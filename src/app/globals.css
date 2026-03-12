@@ -239,6 +239,70 @@ a {
   }
 }
 
+.pony-toggle {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 70;
+  border: 1px solid rgba(123, 106, 81, 0.2);
+  background: rgba(255, 255, 255, 0.94);
+  color: #5f3ea3;
+  font-weight: 700;
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 9px 12px;
+  box-shadow: 0 14px 26px -18px rgba(41, 20, 63, 0.65);
+}
+
+.pony-mode {
+  background:
+    radial-gradient(900px 380px at 30% -5%, rgba(255, 94, 174, 0.2), transparent 55%),
+    radial-gradient(900px 380px at 80% 0%, rgba(120, 198, 255, 0.2), transparent 55%),
+    linear-gradient(180deg, #fff8ff 0%, #fff7f1 100%);
+}
+
+.pony-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  overflow: hidden;
+}
+
+.pony-rainbow {
+  position: absolute;
+  inset: -28% -18% auto -18%;
+  height: 45vh;
+  background: linear-gradient(90deg, #ff3d72, #ff9c2f, #ffe159, #5fe36d, #4fb6ff, #9f6dff, #ff78cb);
+  opacity: 0.18;
+  filter: blur(26px);
+  animation: pony-wave 5.2s ease-in-out infinite;
+}
+
+.pony-heart {
+  position: absolute;
+  font-size: 22px;
+  opacity: 0.55;
+  animation: pony-float 7s ease-in-out infinite;
+}
+
+.pony-heart.h1 { left: 6%; top: 20%; animation-delay: 0s; }
+.pony-heart.h2 { left: 22%; top: 66%; animation-delay: 1.1s; }
+.pony-heart.h3 { left: 39%; top: 30%; animation-delay: 2s; }
+.pony-heart.h4 { left: 58%; top: 72%; animation-delay: 3s; }
+.pony-heart.h5 { left: 76%; top: 24%; animation-delay: 4.2s; }
+.pony-heart.h6 { left: 90%; top: 60%; animation-delay: 5.1s; }
+
+@keyframes pony-wave {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(18px); }
+}
+
+@keyframes pony-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-14px) scale(1.08); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
